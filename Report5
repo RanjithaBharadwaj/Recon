@@ -1,0 +1,1586 @@
+def report5(BU_name,Report_Folder,Template_Path5,Dashboard_Path,file_path,file_path2,file_path3,file_path4,Mapping_Sheet):
+    
+    print(BU_name+ "Processing Started")
+    
+    try: 
+        #set environment
+        import os
+        import pandas as pd
+        from google.cloud import bigquery
+        import numpy as np
+        from openpyxl import load_workbook
+        from openpyxl.worksheet.views import Pane
+        from openpyxl import Workbook, worksheet
+        import datetime
+        import glob
+        import re
+        import io
+        # from Google import Create_Service
+        # from googleapiclient.http import MediaFileUpload
+        import pickle
+        # from google_auth_oauthlib.flow import Flow, InstalledAppFlow
+        # from googleapiclient.discovery import build
+        # from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+        # from google.auth.transport.requests import Request
+        from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+        from dateutil import parser
+        import openpyxl
+        from datetime import date, timedelta
+        from datetime import timezone
+        from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font
+    
+        
+        pd.options.mode.chained_assignment = None
+
+        ####BUG FIxes for column name########
+        import shutil
+
+
+        # Copy the original CSV file to the destination folder
+        source_file = file_path
+        print(file_path)
+        directory_path = os.path.dirname(file_path)
+        print(directory_path)
+        destination_file = directory_path+("working_file.csv")
+        shutil.copy(source_file, destination_file)
+
+        # Read the copied CSV file
+        df = pd.read_csv(destination_file)
+
+        # Rename the column
+        df = df.rename(columns={"LEDGER_NAME": "Ledger_Name",
+                                "ACCOUNTING_DATE": "Accounting_Date",
+                                "CUSTOMER_ACCOUNT_NAME": "Customer_Account_Name",
+                                "BILL_TO_CUSTOMER_NUMBER": "Bill_To_Customer_Number",
+                                "INTERCO_CODE": "Interco_Code",
+                                "ACCOUNT_CODE": "Account_Code",
+                                "ENTERED_AMOUNT": "Entered_Amount",
+                                "ACCOUNTED_AMOUNT": "Accounted_Amount",
+                                "TRANSACTION_DATE": "Transaction_Date",
+                                "CATEGORY": "Category",
+                                "DOCUMENT_CURRENCY": "Document_Currency",
+                                "JOURNAL_CATEGORY": "Journal_Category",
+                                "INTERCO_CATEGORY_NAME": "Interco_Category_Name",
+                                })
+
+        # Save the modified CSV file
+        df.to_csv(destination_file, index=False)
+
+        file_path =destination_file
+
+        
+        # Report_Folder="D:\IntercoRecon\Required\OutputFiles\Report5"
+        # Template_Path ="D:\IntercoRecon\Required\Templates\Report 5 Template.xlsx"
+        # Dashboard_Path="D:\IntercoRecon\Required\OutputFiles\Report5\DashboardData"
+       # Mapping_Sheet ="D:\IntercoRecon\Required\InputFiles\Mapping Report5.xlsx"
+        # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r'C:\\Users\\Ranjitha_HR\\Downloads\\airasia-taodata-dev-385ddd5103c2.json'
+    
+        # def Create_Service(client_secret_file, api_name, api_version, *scopes):
+        #     print(client_secret_file, api_name, api_version, scopes, sep='-')
+        #     CLIENT_SECRET_FILE = client_secret_file
+        #     API_SERVICE_NAME = api_name
+        #     API_VERSION = api_version
+        #     SCOPES = [scope for scope in scopes[0]]
+        #     print(SCOPES)
+        #     pickle_file = f'token_{API_SERVICE_NAME}_{API_VERSION}.pickle'
+        #     # print(pickle_file)
+    
+        #     if os.path.exists(pickle_file):
+        #         with open(pickle_file, 'rb') as token:
+        #             cred = pickle.load(token)
+    
+        #     if not cred or not cred.valid:
+        #         if cred and cred.expired and cred.refresh_token:
+        #             cred.refresh(Request())
+        #         else:
+        #             flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+        #             cred = flow.run_local_server()
+    
+        #         with open(pickle_file, 'wb') as token:
+        #             pickle.dump(cred, token)
+    
+        #     try:
+        #         service = build(API_SERVICE_NAME, API_VERSION, credentials=cred)
+        #         print(API_SERVICE_NAME, 'service created successfully')
+        #         return service
+        #     except Exception as e:
+        #         print('Unable to connect.')
+        #         print(e)
+        #         return None
+    
+        def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
+            dt = datetime.datetime(year, month, day, hour, minute, 0).isoformat() + 'Z'
+            return dt
+    
+    
+    
+        # def Create_Service(client_secret_file, api_name, api_version, *scopes):
+        #     print(client_secret_file, api_name, api_version, scopes, sep='-')
+        #     CLIENT_SECRET_FILE = client_secret_file
+        #     API_SERVICE_NAME = api_name
+        #     API_VERSION = api_version
+        #     SCOPES = [scope for scope in scopes[0]]
+        #     print(SCOPES)
+        #     pickle_file = f'token_{API_SERVICE_NAME}_{API_VERSION}.pickle'
+        #     # print(pickle_file)
+    
+        #     if os.path.exists(pickle_file):
+        #         with open(pickle_file, 'rb') as token:
+        #             cred = pickle.load(token)
+    
+        #     if not cred or not cred.valid:
+        #         if cred and cred.expired and cred.refresh_token:
+        #             cred.refresh(Request())
+        #         else:
+        #             flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+        #             cred = flow.run_local_server()
+    
+        #         with open(pickle_file, 'wb') as token:
+        #             pickle.dump(cred, token)
+    
+        #     try:
+        #         service = build(API_SERVICE_NAME, API_VERSION, credentials=cred)
+        #         print(API_SERVICE_NAME, 'service created successfully')
+        #         return service
+        #     except Exception as e:
+        #         print('Unable to connect.')
+        #         print(e)
+        #         return None
+    
+        def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
+            dt = datetime.datetime(year, month, day, hour, minute, 0).isoformat() + 'Z'
+            return dt
+    
+        def get_ARAP_data(business_unit,interco_business_unit):
+            df_trans = new_df_APAR3[(new_df_APAR3['BU']==business_unit) & (new_df_APAR3['Interco_BU']==interco_business_unit)]
+            #ARAP_combine = df_trans.drop(['Merged_File_Path','File_Path',  'MonthYear', 'Ledger Name', 'Supplier/Customer Name','Inter Company Name', 'Interco_BU', 'Interco Code'], axis = 1)
+            ARAP_combine = df_trans.drop(['MonthYear', 'Ledger Name', 'Supplier/Customer Name','Inter Company Name', 'Interco_BU', 'Interco Code'], axis = 1)
+            ARAP_combine['Entered_Amount'] = pd.to_numeric(ARAP_combine['Entered_Amount'])
+            ARAP_combine['Accounted_Amount'] = pd.to_numeric(ARAP_combine['Accounted_Amount'])
+            ARAP_combine['Account_Code'] = ARAP_combine['Account_Code'].str.split('.').str[0]
+            ARAP_combine['Transaction_Date'] = ARAP_combine['Transaction_Date'].str.split('T').str[0]
+            ARAP_combine['Accounting_Date'] = ARAP_combine['Accounting_Date'].str.split('T').str[0]
+            ARAP_combine = ARAP_combine.sort_values(by="Account_Code",ascending=True)
+            print(ARAP_combine['Customer_Account_Name'].unique())
+            print(ARAP_combine['Accounting_Date'].max())
+            return ARAP_combine
+    
+        def create_report_pairing(business_unit,interco_business_unit):
+    
+            if not os.path.isdir(Report_Folder+"\\{}".format(business_unit)):
+                os.makedirs(Report_Folder+"\\{}".format(business_unit))
+    
+            filepath = "{}-Interco Movement_{}-{}.xlsx".format(YYMM_format,business_unit,rename)
+            filename = Template_Path5
+            filename_2 = Report_Folder+"\{}\{}".format(business_unit,filepath)
+    
+            wb = load_workbook(filename_2)
+            ws = wb['Summary']
+            new_title = "{} -{}".format(business_unit,interco_business_unit)
+            ws.title = new_title
+            ################## formatting ###########
+            company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==business_unit]['LEGAL_ENTITY_NAME']
+            interco_company_name = df_mapping2[df_mapping2['Business Unit']==interco_business_unit]['Inter Company Name']
+        #     interco_company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==interco_business_unit]['LEGAL_ENTITY_NAME']
+            print("DEBUG: " +str(interco_business_unit))
+            ws["A1"]= "Intercompany Balances by Journal Category"
+            ws["A1"].font=Font(bold=True,size = 9, name = 'Arial')
+            ws["A2"] = company_name.iloc[0] +"-"+ interco_company_name.iloc[0]
+            ws["A2"].font = Font(color='FF0000',bold=True,size = 9, name = 'Arial')
+            A3font = Font(size = 10, name = 'Calibri')
+            ws["A3"] = str(final_format)
+            ws["A3"].font= A3font
+            ws["A4"] = "All amount in {}".format(report_currency.iloc[0])
+            ws["A4"].font=Font(italic=True ,size = 10, name = 'Calibri')
+            top_left_cell = ws.cell(row=1, column=3)
+            ws.freeze_panes = top_left_cell
+            wb.save(filename_2)
+    
+    
+            ## insert pivot data
+            book = load_workbook(filename_2)
+            pd.io.formats.excel.ExcelFormatter.header_style = None
+            writer = pd.ExcelWriter(filename_2, engine='openpyxl')
+            writer.book = book
+            writer.sheets = {ws.title: ws for ws in book.worksheets}
+    
+            pivot_table.to_excel(writer,sheet_name=new_title, startrow=5, index = True,header= True)
+            writer.save()
+    
+            len_pivot_row = len(pivot_table)
+            len_pivot_col = len(pivot_table.columns)+2
+            print(len_pivot_col)
+            wb = load_workbook(filename_2)
+            ws = wb[new_title]
+    
+            #format header
+            last_cell_merge_sum = ws.cell(6,len_pivot_col).coordinate
+            last_cell_merge_amount = ws.cell(7,len_pivot_col).coordinate
+            ws.unmerge_cells("C6:{}".format(last_cell_merge_sum))
+            ws.unmerge_cells("C7:{}".format(last_cell_merge_amount))
+    
+    
+            last_cell_header = ws.cell(8,len_pivot_col).coordinate
+            ws.move_range("C8:{}".format(last_cell_header), rows=1)
+            ws["B8"] = ""
+            ws["C8"] = "Journal Category"
+    
+            ws.delete_rows(6, amount=2)    
+    
+    
+            new_row = len_pivot_row + 8
+    
+    
+            ws.cell(new_row,1).value = "Interco Revaluation"
+            ws.cell(new_row,len_pivot_col).value = Accounted_Amount_Reval
+            ws.cell(new_row,len_pivot_col).number_format = '#,##0.00;(#,##0.00)'
+    
+            Accounted_Amount_Reval_loc = ws.cell(new_row,len_pivot_col).coordinate
+            Grand_Total_loc = ws.cell(new_row-1,len_pivot_col).coordinate
+            Grand_Total_value = ws.cell(new_row-1,len_pivot_col).value
+    
+            ws.cell(new_row+1,1).value = "Interco Balances"
+            ws.cell(new_row+1,len_pivot_col).value = "=" + Grand_Total_loc +"+"+ Accounted_Amount_Reval_loc
+            ws.cell(new_row+1,len_pivot_col).number_format = '#,##0.00;(#,##0.00)'
+            ws.cell(new_row+2,1).value = "Interco Balances - TB"
+            ws.cell(new_row+2,len_pivot_col).value = Accounted_Amount_Balance
+            ws.cell(new_row+2,len_pivot_col).number_format = '#,##0.00;(#,##0.00)'
+    
+            Interco_Balances_loc = ws.cell(new_row+1,len_pivot_col).coordinate
+            Accounted_Amount_Balance_loc = ws.cell(new_row+2,len_pivot_col).coordinate
+    
+    
+    
+    
+            ws.cell(new_row+3,1).value = "Checking"
+            ws.cell(new_row+3,1).font  = Font(color='FF0000',italic=True ,size = 11, name = 'Calibri')
+            ws.cell(new_row+3,len_pivot_col).value = "=" + Interco_Balances_loc +"-"+ Accounted_Amount_Balance_loc
+            ws.cell(new_row+3,len_pivot_col).number_format = '#,##0.00;(#,##0.00)'
+            checking_value=(round(Grand_Total_value,2)+round(Accounted_Amount_Reval,2))
+            print(checking_value)
+            checking_value=round(checking_value,2)-round(Accounted_Amount_Balance,2)
+            print(checking_value)
+            print("Grand_total_value-"+str(Grand_Total_value)+" Accounted_Amount_Reval-"+str(Accounted_Amount_Reval)+" Accounted_Amount_Balance"+str(Accounted_Amount_Balance))
+            sum_row_of_pivot = new_row-1
+    
+            headerfont = Font(color='f3f6f4')
+            sum_row_of_pivot = new_row-1
+            ws["A"+str(sum_row_of_pivot)] = "Grand Total"
+            GTfont = Font(bold=True,size = 11, name = 'Calibri')
+            ws["A"+str(sum_row_of_pivot)]. font = GTfont
+    
+            # sum_row_start = column_index_of_start_pivot
+            sum_row_end = openpyxl.utils.cell.get_column_letter(len_pivot_col)
+            Totalcolumn=sum_row_end+str(7)
+            ws[Totalcolumn] = "Grand Total"
+            ws[Totalcolumn]. font = GTfont
+            # print (sum_row_start)
+            # print (sum_row_end)
+    
+            for rows in ws.iter_rows(min_row=sum_row_of_pivot, max_row=sum_row_of_pivot, min_col=1, max_col=len_pivot_col): 
+                for cell in rows: 
+                    cell.fill = PatternFill(start_color='eeeeee', end_color='eeeeee',fill_type = "solid")  
+    
+            for rows in ws.iter_rows(min_row=6, max_row=6, min_col=1, max_col=len_pivot_col): 
+                for cell in rows: 
+                    cell.fill = PatternFill(start_color='eeeeee', end_color='eeeeee',fill_type = "solid")
+    
+            for rows in ws.iter_rows(min_row=6+1, max_row=6+1, min_col=3, max_col=len_pivot_col): 
+                for cell in rows: 
+                    cell.fill = PatternFill(start_color='9fc5e8', end_color='9fc5e8',fill_type = "solid")
+                    cell.alignment = Alignment(horizontal='right')
+                    cell. font = headerfont
+    
+            for rows in ws.iter_rows(min_row=6+1, max_row=6+1, min_col=1, max_col=2): 
+                for cell in rows: 
+                    cell.fill = PatternFill(start_color='eeeeee', end_color='eeeeee',fill_type = "solid")
+    
+            for rows in ws.iter_rows(min_row=6+2, max_row=len_pivot_row+6, min_col=1, max_col=2): 
+                for cell in rows: 
+                    cell.fill = PatternFill(start_color='eeeeee', end_color='eeeeee',fill_type = "solid")
+    
+            for rows in ws.iter_rows(min_row=6+2, max_row=len_pivot_row+6, min_col=3, max_col=len_pivot_col):
+                for cell in rows:
+                    cell.number_format = '#,##0.00;(#,##0.00)'
+                    cell.alignment = Alignment(horizontal='right')
+    
+            for rows in ws.iter_rows(min_row=sum_row_of_pivot, max_row=sum_row_of_pivot, min_col=3, max_col=len_pivot_col): 
+                for cell in rows: 
+                    cell.number_format = '#,##0.00;(#,##0.00)'
+    
+            i=3
+            while i < len_pivot_col:
+                col_nam=openpyxl.utils.cell.get_column_letter(i)
+                ws.column_dimensions[col_nam].width = 28
+                i=i+1
+    
+            bottom=Side(border_style='thin')
+            border=Border(bottom=bottom)
+            start_column = "A"+str(new_row)
+            end_column = openpyxl.utils.cell.get_column_letter(len_pivot_col)
+            end_column = end_column+str(new_row)
+            print (end_column)
+            range1 = ws[start_column:end_column]
+            for cell in range1:
+                for x in cell:
+                    x.border=border
+            row_number = new_row+2   
+            print (row_number)   
+            sec_start_column = "A"+str(row_number)
+            end_column_1 = openpyxl.utils.cell.get_column_letter(len_pivot_col)
+            sec_end_column = end_column_1 + str(row_number)
+            print(sec_end_column)
+            range2=ws[sec_start_column:sec_end_column]
+            for cell in range2:
+                for x in cell:
+                    x.border=border
+    
+    
+    
+            wb.save(filename_2)
+            return Grand_Total_value,checking_value
+    
+        def create_table_movement(new_data,new_data_Nett_Sett,category_list,currency_list,MonthYear):
+            """
+            This function is used to create output calculation of each table column
+            """
+    
+            new_data =new_data[new_data['MonthYear'] ==MonthYear]
+            new_data_Nett_Sett = new_data_Nett_Sett[new_data_Nett_Sett['MonthYear']==MonthYear]
+    
+            # print(len(currency_list))
+            list_Invoice_CN =[]
+            for cat in category_list:
+                new_dict = dict()
+                for curr in currency_list:
+                    cal_data = new_data[(new_data["Category"]==cat) & (new_data["Document_Currency"]==curr)]
+                    Invoice_CN = cal_data[cal_data["Journal_Category"]=="Sales Invoices"]['Entered_Amount'].astype(float).sum() \
+                                + cal_data[cal_data["Journal_Category"]=="Purchase Invoices"]['Entered_Amount'].astype(float).sum() \
+                                + cal_data[cal_data["Journal_Category"]=="Credit Memos"]['Entered_Amount'].astype(float).sum()
+                    new_dict[curr]=Invoice_CN
+                list_Invoice_CN.append(new_dict)
+    
+            list_Payment_Receipt = []
+            for cat in category_list:
+                new_dict = dict()
+                for curr in currency_list:
+                    cal_data = new_data[(new_data["Category"]==cat) & (new_data["Document_Currency"]==curr)]
+                    Payment_Receipt = cal_data[cal_data["Journal_Category"]=="Payments"]['Entered_Amount'].astype(float).sum() \
+                                + cal_data[cal_data["Journal_Category"]=="Receipts"]['Entered_Amount'].astype(float).sum() \
+        #                         + cal_data[cal_data["Journal_Category"]=="Adjustments"]['Entered_Amount'].sum()
+                    new_dict[curr]=Payment_Receipt
+                list_Payment_Receipt.append(new_dict)
+    
+            list_Adjustment = []
+            for cat in category_list:
+                new_dict = dict()
+                for curr in currency_list:
+                    cal_data = new_data[(new_data["Category"]==cat) & (new_data["Document_Currency"]==curr)]
+                    Adjustment = cal_data[cal_data["Journal_Category"]=="Adjustment"]['Entered_Amount'].astype(float).sum()
+                    new_dict[curr]=Adjustment
+                list_Adjustment.append(new_dict)
+    
+            list_Net_Sett = []
+            for cat in category_list:
+                new_dict = dict()
+                for curr in currency_list:
+                    cal_data = new_data_Nett_Sett[(new_data_Nett_Sett["INTERCO_TRX_TYPE"]==cat) & (new_data_Nett_Sett["SETTLEMENT_CURRENCY"]==curr)]
+                    nett_settlement = cal_data["FINAL_NETTING_AMOUNT"].sum()
+                    if nett_settlement == 0:
+                        new_dict[curr]=nett_settlement 
+                    else:
+                        new_dict[curr]=nett_settlement*-1 
+                list_Net_Sett.append(new_dict)
+    
+        ######### added by Nidzam ###################
+            list_Net_Movement = []
+            for cat in category_list:
+                new_dict = dict()
+                for curr in currency_list:
+    
+                    cal_data = new_data[(new_data["Category"]==cat) & (new_data["Document_Currency"]==curr)]
+                    Invoice_CN = cal_data[cal_data["Journal_Category"]=="Sales Invoices"]['Entered_Amount'].astype(float).sum() \
+                                + cal_data[cal_data["Journal_Category"]=="Purchase Invoices"]['Entered_Amount'].astype(float).sum() \
+                                + cal_data[cal_data["Journal_Category"]=="Credit Memos"]['Entered_Amount'].astype(float).sum()
+                    Payment_Receipt = cal_data[cal_data["Journal_Category"]=="Payments"]['Entered_Amount'].astype(float).sum() \
+                                + cal_data[cal_data["Journal_Category"]=="Receipts"]['Entered_Amount'].astype(float).sum()
+                    Adjustment = cal_data[cal_data["Journal_Category"]=="Adjustment"]['Entered_Amount'].astype(float).sum()
+    
+                    cal_data = new_data_Nett_Sett[(new_data_Nett_Sett["INTERCO_TRX_TYPE"]==cat) & (new_data_Nett_Sett["SETTLEMENT_CURRENCY"]==curr)]
+                    nett_settlement = cal_data["FINAL_NETTING_AMOUNT"].sum()
+    
+                   # Net_Movement_data = Invoice_CN + Payment_Receipt + Adjustment + nett_settlement*-1 Commented on Ennaira's request on 13/07/2023
+                    Net_Movement_data = Invoice_CN + Payment_Receipt + Adjustment 
+                    new_dict[curr] = Net_Movement_data
+                new_dict["Category"] = cat
+                list_Net_Movement.append(new_dict)
+    
+            pd_Invoice_CN =pd.DataFrame(list_Invoice_CN)
+            pd_Payment_Receipt =pd.DataFrame(list_Payment_Receipt)
+            pd_Adjustment = pd.DataFrame(list_Adjustment)
+            pd_Net_Settlement = pd.DataFrame(list_Net_Sett)
+            pd_Net_Movement = pd.DataFrame(list_Net_Movement) #added by nidzam
+            return pd_Invoice_CN,pd_Payment_Receipt,pd_Adjustment,pd_Net_Settlement,pd_Net_Movement
+    
+        def bal_per_sys(new_data,currency_list):
+            cal_result = []
+            for curr in currency_list:
+                cal_data = new_data[new_data["Document_Currency"]==curr]
+                cal_result.append(cal_data["Entered_Amount"].astype(float).sum())
+    
+            return cal_result
+    
+    
+        def create_table(starting_row,
+                         start,
+                         table_len,
+                         table_title,
+                         fgColor,category_len):
+    
+            start_cell_merge = ws.cell(starting_row,start).coordinate
+            start_cell_merge1=ws.cell(starting_row+1,start).coordinate
+            last_cell_merge= ws.cell(starting_row,starting_col+table_len-1).coordinate
+            last_cell_merge1=ws.cell(starting_row+1,starting_col+table_len-1).coordinate
+            ws.merge_cells("{}:{}".format(start_cell_merge,last_cell_merge))
+    
+            start_invoice_CN_range=ws.cell(starting_row+1,start).coordinate
+            last_invoice_CN_range=ws.cell(starting_row+category_len+2,starting_col+table_len-1).coordinate
+            start_closingbalance_range=ws.cell(starting_row+category_len+2,start).coordinate
+            last_closingbalance_range=ws.cell(starting_row+category_len+2,starting_col+table_len-1).coordinate
+            start_payment_range=ws.cell(starting_row+1,start).coordinate
+            last_payment_range=ws.cell(starting_row+category_len+2,starting_col+table_len-1).coordinate
+            start_adjustment_range=ws.cell(starting_row+1,start).coordinate
+            last_adjustment_range=ws.cell(starting_row+category_len+2,starting_col+table_len-1).coordinate
+            start_netoff_range=ws.cell(starting_row+1,start).coordinate
+            last_netoff_range=ws.cell(starting_row+category_len+2,starting_col+table_len-1).coordinate
+            start_netmovement_range=ws.cell(starting_row+1,start).coordinate
+            last_netmovement_range=ws.cell(starting_row+category_len+2,starting_col+table_len-1).coordinate
+            start_netbalance_range=ws.cell(starting_row+1,start).coordinate
+            last_netbalance_range=ws.cell(starting_row+category_len+2,starting_col+table_len-1).coordinate
+            start_currency_range=ws.cell(starting_row+1,start).coordinate
+            last_currency_range=ws.cell(starting_row+1,starting_col+table_len-1).coordinate
+        #     print(start_cell_merge,"",last_cell_merge)
+            ws[start_cell_merge] = table_title
+            ws[start_cell_merge].border = Border(top=thin, left=thin, right=thin, bottom=thin)
+            ws[start_cell_merge].alignment = Alignment(horizontal='center', vertical='center')
+            ws[start_cell_merge].fill = PatternFill("solid", fgColor=fgColor)
+            range2=ws[start_cell_merge:last_cell_merge]
+            range3=ws[start_cell_merge1:last_cell_merge1]
+            invoice_CN_range=ws[start_invoice_CN_range:last_invoice_CN_range]
+            payment_range=ws[start_payment_range:last_payment_range]
+            adjustment_range=ws[start_adjustment_range:last_adjustment_range]
+            netoff_range=ws[start_netoff_range:last_netoff_range]
+            netmovement_range=ws[start_netmovement_range:last_netmovement_range]
+            closingbalance_range=ws[start_closingbalance_range:last_closingbalance_range]
+            netbalance_range=ws[start_netbalance_range:last_netbalance_range]
+            currency_range=ws[start_currency_range:last_currency_range]
+            for cell in range2:
+                for x in cell:
+                    x.font=Font(bold=True, size=10, name = 'Airal')
+            for cell in range3:
+                for x in cell:
+                    x.font=Font(bold=True, size=10, name = 'Airal')
+    
+            if  table_title == "Invoice/CN":
+                for cell in invoice_CN_range:
+                    for x in cell:
+                        x.number_format = '#,##0.00;(#,##0.00)'
+                        x.border = Border(left=thin, right=thin)
+                        #x.alignment = Alignment(horizontal='center', vertical='center')
+            if table_title == "Payment/Receipt":
+                for cell in payment_range:
+                    for x in cell:
+                        x.number_format = '#,##0.00;(#,##0.00)'
+                        x.border = Border( left=thin, right=thin)
+    
+            if table_title == "Adjustment":
+                for cell in adjustment_range:
+                    for x in cell:
+                        x.number_format = '#,##0.00;(#,##0.00)'
+                        x.border = Border(left=thin, right=thin)
+            if table_title == "Net-off Settlement":
+                for cell in netoff_range:
+                    for x in cell:
+                        x.number_format = '#,##0.00;(#,##0.00)'
+                        x.border = Border( left=thin, right=thin)
+            if table_title == "Net Movement":
+                for cell in netmovement_range:
+                    for x in cell:
+                        x.number_format = '#,##0.00;(#,##0.00)'
+                        x.border = Border(left=thin, right=thin)
+            if table_title== "Net Balances":
+                for cell in netbalance_range:
+                    for x in cell:
+                        x.number_format = '#,##0.00;(#,##0.00)'
+                        x.border = Border(left=thin, right=thin)
+    
+            for cell in closingbalance_range:
+                for x in cell:
+                    x.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+                    x.font = Font(bold=True, size =10,name= 'Arial')
+            for cell in currency_range:
+                for x in cell:
+                        x.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+                        x.alignment = Alignment(horizontal='center', vertical='center')
+    
+            return start_cell_merge,last_cell_merge
+    
+        def insert_starting_point(filename,sheet_name,starting_row,startcol,category_len,EndCellPosition_val):
+            book = load_workbook(filename)
+            pd.io.formats.excel.ExcelFormatter.header_style = None
+            writer = pd.ExcelWriter(filename_2, engine='openpyxl')
+            writer.book = book
+            writer.sheets = {ws.title: ws for ws in book.worksheets}
+            start_point_df.to_excel(writer,sheet_name=sheet_name, startrow=starting_row, startcol=startcol,index = False,header= True)
+            writer.save()
+    
+            wb = load_workbook(filename)
+            ws = wb[sheet_name]
+            thin = Side(border_style="thin", color="000000")
+            fgColor = "FCF3CF"
+            start_cell_merge = ws.cell(starting_row,startcol+1).coordinate
+            last_cell_merge= ws.cell(starting_row,startcol+1+len(start_point_df.columns)-1).coordinate
+            ws.merge_cells("{}:{}".format(start_cell_merge,last_cell_merge))
+            ws[start_cell_merge] = "Opening Balance"
+            ws[start_cell_merge].border = Border(top=thin, left=thin, right=thin, bottom=thin)
+            ws[start_cell_merge].alignment = Alignment(horizontal='center', vertical='center')
+            ws[start_cell_merge].fill = PatternFill("solid", fgColor=fgColor)
+            ws[start_cell_merge].font=Font(bold=True, size=10, name = 'Airal')
+    
+            #fgColor = "5DADE2"
+            fgColor ="C0C0C0"
+            start_cell_merge = ws.cell(starting_row-1,startcol+1).coordinate
+            last_cell_merge= ws.cell(starting_row-1,startcol+1+len(start_point_df.columns)-1).coordinate
+            ws.merge_cells("{}:{}".format(start_cell_merge,last_cell_merge))
+            ws[start_cell_merge] = this_year_var
+            ws[start_cell_merge].border = Border(top=thin, left=thin, right=thin, bottom=thin)
+            ws[start_cell_merge].alignment = Alignment(horizontal='center', vertical='center')
+            ws[start_cell_merge].fill = PatternFill("solid", fgColor=fgColor)
+            ws[start_cell_merge].font=Font(bold=True, size=10, name = 'Airal')
+    
+            for val in range(len_df_column):
+                EndCellPosition = ws.cell(EndCellPosition_val,startcol+1+val).coordinate
+                StartSumCell =  ws[EndCellPosition].offset(-len_df_row,0).coordinate
+                EndSumCell = ws[EndCellPosition].offset(-1,0).coordinate
+                ws[EndCellPosition] = "=SUM({}:{})".format(StartSumCell,EndSumCell)
+    
+            start_opening_range=ws.cell(starting_row+1,startcol+1).coordinate
+            last_opening_range_row = ws.cell(starting_row+1,startcol+1+len(start_point_df.columns)-1).coordinate
+            opening_range_row = ws[start_opening_range:last_opening_range_row]
+    
+            last_opening_range = ws.cell(starting_row+category_len+2,startcol+len(start_point_df.columns)).coordinate
+            opening_range_table = ws[start_opening_range:last_opening_range]
+    
+            start_sum_row = ws.cell(starting_row+category_len+2,startcol+1).coordinate
+            start_sum_range = ws[start_sum_row:last_opening_range]
+    
+            for cell in opening_range_table:
+                for x in cell:
+                    x.number_format = '#,##0.00;(#,##0.00)'
+                    x.border = Border(left=thin, right=thin)
+    
+            for cell in opening_range_row:
+                for x in cell:
+                        x.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+                        x.alignment = Alignment(horizontal='center', vertical='center')
+                        x.font=Font(bold=True, size=10, name = 'Airal')
+    
+            for cell in start_sum_range:
+                for x in cell:
+                        x.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+                        x.number_format = '#,##0.00;(#,##0.00)'
+                        x.font=Font(bold=True, size=10, name = 'Airal')
+    
+            wb.save(filename)
+    
+        def df_to_excel(startrow,startcol,filename,table_len):
+            ## insert pivot data
+            book = load_workbook(filename)
+            pd.io.formats.excel.ExcelFormatter.header_style = None
+            writer = pd.ExcelWriter(filename, engine='openpyxl')
+            writer.book = book
+            writer.sheets = {ws.title: ws for ws in book.worksheets}
+            pd_Invoice_CN.to_excel(writer,sheet_name="Intercompany Movement", startrow=startrow, startcol=startcol,index = False,header= True)
+            pd_Payment_Receipt.to_excel(writer,sheet_name="Intercompany Movement", startrow=startrow, startcol=startcol+table_len,index = False,header= True)
+            pd_Adjustment.to_excel(writer,sheet_name="Intercompany Movement", startrow=startrow, startcol=startcol+(table_len*2),index = False,header= True)
+            pd_Net_Settlement.to_excel(writer,sheet_name="Intercompany Movement", startrow=startrow, startcol=startcol+(table_len*3),index = False,header= True)
+            writer.save()
+        #     wb.save(filename_2)
+    
+        def get_report_data(business_unit,interco_business_unit):         
+            new_data = new_df_APAR3[(new_df_APAR3['BU']== business_unit) & (new_df_APAR3['Interco_BU']==interco_business_unit)]
+            report_currency = df_mapping3[df_mapping3['BUSINESS_UNIT']==business_unit]['Reporting Currency']
+            Accounted_Amount_Reval = new_df_Interco_Reval[(new_df_Interco_Reval["BU"]==business_unit) & \
+                                                          (new_df_Interco_Reval["Interco_BU"]==interco_business_unit)]['NET_ACCOUNTED_AMOUNT'].sum()
+            Accounted_Amount_Balance = new_df_Interco_Balance[(new_df_Interco_Balance["BU"]==business_unit) & \
+                                                              (new_df_Interco_Balance["Interco_BU"]==interco_business_unit)]['ACCOUNTED_AMOUNT_YTD'].sum()
+    
+            new_data['Interco_Category_Name']=new_data['Interco_Category_Name'].fillna(' ')
+            new_data.rename(columns = {'Interco_Category_Name':'Interco Category Name'}, inplace = True)
+        #     pivot_table=new_data.pivot_table(index=['Interco Category Name','Category'],
+        #                             values = ['Accounted_Amount'],
+        #                             columns=['Journal_Category'],
+        #                             aggfunc=[np.sum],
+        #                             fill_value=0,
+        #                             margins=True
+        #                                     )
+            #new_data_checking=new_data[new_data.Category="000000"]
+            filtered_data = new_data[new_data['Category'] == "0000"] 
+            csv_filename = "C://RPA//filtered_data1.csv"
+            filtered_data.to_csv(csv_filename, index=False)
+            print ("*************")
+            #print (new_data_checking)
+            new_data["Accounted_Amount"]=new_data["Accounted_Amount"].astype(float)
+           # pivot_table=new_data.pivot_table(index=['Interco Category Name','Category'],
+            pivot_table=new_data.pivot_table(index=['Category','Interco Category Name'],
+                                    values = ['Accounted_Amount'],
+                                    columns=['Journal_Category'],
+                                    aggfunc=[np.sum],
+                                    fill_value=0,
+                                    margins=True)
+            return pivot_table,Accounted_Amount_Reval,Accounted_Amount_Balance,report_currency
+    
+        ######### added by Nidzam ###################
+        def create_start_point(max_date,new_data,new_data_Nett_Sett,category_list,currency_list,MonthYear_list):
+        #     import calendar
+        #     import time
+    
+        #     current_GMT = time.gmtime()
+    
+        #     time_stamp = calendar.timegm(current_GMT)
+        #     import datetime
+        #     today = datetime.datetime.now()
+        #     this_year_var = today.strftime("%y")
+        #     print(this_year_var)
+            datetime_obj = parser.parse(max_date)
+            this_year_var = str(datetime_obj.year)[-2:]
+            print(this_year_var)
+            new_MonthYear_list = [item for item in MonthYear_list if this_year_var not in item]
+        #     print(new_MonthYear_list)
+            df_list = []
+            for MonthYear in new_MonthYear_list:
+                pd_Invoice_CN,pd_Payment_Receipt,pd_Adjustment,pd_Net_Settlemen,pd_Net_Movementt = create_table_movement(new_data,
+                                                                                                     new_data_Nett_Sett,
+                                                                                                     category_list,
+                                                                                                     currency_list,
+                                                                                                     MonthYear)
+                pd_Net_Movementt["MonthYear"] = MonthYear
+                df_list.append(pd_Net_Movementt)
+            if len(df_list) > 0:
+                cumm_data = pd.concat(df_list)
+            else:
+                cumm_data = df_list
+    
+            start_point_list = []
+            for cat in category_list:
+                new_dict = dict()
+                for curr in currency_list:
+                    if len(new_MonthYear_list)==0:
+                        start_point = 0
+                    else:
+                        start_point =cumm_data[cumm_data['Category']==cat][curr].cumsum().iloc[-1]
+                    new_dict[curr]=start_point
+                start_point_list.append(new_dict)
+            start_point_df = pd.DataFrame(start_point_list)
+        #     print("Cummulative data")
+        #     print(cumm_data)
+        #     cumm_data.to_csv("cumm_data_{}.csv".format(time_stamp))
+            return start_point_df
+    
+        def insert_cat(filename,sheet_name,startrow,startcol):
+            book = load_workbook(filename)
+            pd.io.formats.excel.ExcelFormatter.header_style = None
+            writer = pd.ExcelWriter(filename, engine='openpyxl')
+            writer.book = book
+            writer.sheets = {ws.title: ws for ws in book.worksheets}
+            cat_series.to_excel(writer,sheet_name="Intercompany Movement", startrow=startrow, startcol=startcol,index = False,header= False)
+            writer.save()
+    
+        def get_year_list(max_date):
+    
+            datetime_obj = parser.parse(max_date)
+            this_year_var = datetime_obj.year
+            starting_day_of_current_year = datetime_obj.date().replace(month=1, day=1)
+    
+            min_date = starting_day_of_current_year.strftime('%Y-%m-%d')
+            # min_date = starting_day_of_current_year.strftime('%m/%d/%Y')
+            
+            max_date = pd.to_datetime(max_data_year).strftime('%Y-%m-%d')
+            #max_date = pd.to_datetime(max_data_year).strftime('%m/%d/%Y')
+            ThisYear_MonthYear_list= pd.date_range(min_date,max_date,freq="M")
+            ThisYear_MonthYear_list = pd.to_datetime(ThisYear_MonthYear_list).strftime('%b-%y')
+    
+            if len(ThisYear_MonthYear_list) == 0:
+                print("No data for this year")
+            else:
+                index_month = ThisYear_MonthYear_list[0]
+    
+            return this_year_var,ThisYear_MonthYear_list,index_month
+    
+        def calculate_sum_of_df(df,column):
+            Total =df[column].sum()
+            return Total
+    
+        def compare_two_values(value1,value2):
+            value1=round(value1,2)
+            value2=round(value2,2) 
+            if value1==value2:
+                return ("OK")
+            else:
+                return ("Not OK")
+    
+        def get_comparison_data():
+            import xlwings as xw
+            wbxl= xw.App(visible=False)
+            wbxl=xw.Book(filename_2)
+            new_dict ={}
+            for curr,coor in zip(currency_list,sum_val):        
+                new_dict[curr] = wbxl.sheets['Intercompany Movement'].range(coor).value
+            wbxl.close()
+            return new_dict
+    
+        def create_data_for_dashboard(BU,Interco_BU,MonthYear,index_month):
+            pd_Invoice_CN,pd_Payment_Receipt,pd_Adjustment,pd_Net_Settlement,pd_Net_Movementt = create_table_movement(new_data,
+                                                                                                 new_data_Nett_Sett,
+                                                                                                 category_list,
+                                                                                                 currency_list,
+                                                                                                 MonthYear)
+    
+            pd_Invoice_CN['Category'] = category_list
+            pd_Invoice_CN['Interco_BU'] = Interco_BU
+            pd_Invoice_CN['BU'] = BU
+            pd_Invoice_CN['Month'] = MonthYear
+            cols = list(pd_Invoice_CN.columns)
+            pd_Invoice_CN = pd_Invoice_CN[cols[::-1]]
+            pd_Invoice_CN = pd_Invoice_CN.melt(id_vars=["Category","Interco_BU","BU","Month"], 
+                              var_name="Currency", value_name="Value")
+    
+            pd_Payment_Receipt['Category'] = category_list
+            pd_Payment_Receipt['Interco_BU'] = Interco_BU
+            pd_Payment_Receipt['BU'] = BU
+            pd_Payment_Receipt['Month'] = MonthYear
+            cols = list(pd_Payment_Receipt.columns)
+            pd_Payment_Receipt = pd_Payment_Receipt[cols[::-1]]
+            pd_Payment_Receipt = pd_Payment_Receipt.melt(id_vars=["Category","Interco_BU","BU","Month"], 
+                              var_name="Currency", value_name="Value")
+    
+            pd_Adjustment['Category'] = category_list
+            pd_Adjustment['Interco_BU'] = Interco_BU
+            pd_Adjustment['BU'] = BU
+            pd_Adjustment['Month'] = MonthYear
+            cols = list(pd_Adjustment.columns)
+            pd_Adjustment = pd_Adjustment[cols[::-1]]
+            pd_Adjustment = pd_Adjustment.melt(id_vars=["Category","Interco_BU","BU","Month"], 
+                              var_name="Currency", value_name="Value")
+    
+            pd_Net_Settlement['Category'] = category_list
+            pd_Net_Settlement['Interco_BU'] = Interco_BU
+            pd_Net_Settlement['BU'] = BU
+            pd_Net_Settlement['Month'] = MonthYear
+            cols = list(pd_Net_Settlement.columns)
+            pd_Net_Settlement = pd_Net_Settlement[cols[::-1]]
+            pd_Net_Settlement = pd_Net_Settlement.melt(id_vars=["Category","Interco_BU","BU","Month"], 
+                              var_name="Currency", value_name="Value")
+    
+            pd_Net_Movementt['Interco_BU'] = Interco_BU
+            pd_Net_Movementt['Interco_BU'] = Interco_BU
+            pd_Net_Movementt['BU'] = BU
+            pd_Net_Movementt['Month'] = MonthYear
+            cols = list(pd_Net_Movementt.columns)
+            pd_Net_Movementt = pd_Net_Movementt[cols[::-1]]
+            pd_Net_Movementt = pd_Net_Movementt.melt(id_vars=["Category","Interco_BU","BU","Month"], 
+                              var_name="Currency", value_name="Value")
+    
+            folder_path = Dashboard_Path
+            file_list = ['Invoice_CN.csv','Payment_Receipt.csv','Adjustment.csv','Net_Settlement.csv','Net_Movementt.csv']
+            df_list = [pd_Invoice_CN,pd_Payment_Receipt,pd_Adjustment,pd_Net_Settlement,pd_Net_Movementt]
+            for file,df in zip(file_list,df_list):
+                if os.path.exists(folder_path + file):
+                    # present_data = pd.read_csv(file)
+                    # print(present_data)
+                    # newdf = pd.concat([present_df, df], ignore_index=True)
+                    df.to_csv(folder_path + file, mode='a', index=False, header=False)
+                else:
+                    df.to_csv(folder_path +"\\"+ file, mode='w', index=False, header=True)
+    
+    
+        #######################################################################
+    
+        # file_path = "gs://trip180_interco_recon_dev/Output/AP_AR_Intercompany_Merged.csv"
+        # file_path2 = "gs://trip180_interco_recon_dev/Output/Interco Balances.csv"
+        # file_path3 = "gs://trip180_interco_recon_dev/Output/Interco Revaluation Report.csv"
+        # file_path4 = "gs://trip180_interco_recon_dev/Output/Netting Settlement.csv"
+        
+##        file_path = "D:/IntercoRecon/Required/InputFiles/Trip 180/AP_AR_Intercompany_Merged.csv"
+##        file_path2 = "D:/IntercoRecon/Required/InputFiles/Trip 180/Interco Balances.csv"
+##        file_path3 = "D:/IntercoRecon/Required/InputFiles/Trip 180/Interco Revaluation Report.csv"
+##        file_path4 = "D:/IntercoRecon/Required/InputFiles/Trip 180/Netting Settlement.csv"
+    
+        #token_path = r'C:\\Users\\Ranjitha_HR\\Downloads\\airasia-taodata-dev-385ddd5103c2.json'
+    
+        #### reading from combined AP and AR file
+    
+        df_APAR = pd.read_csv(file_path)
+        #adding MonthYear column for monthly movement
+        df_APAR= df_APAR[~df_APAR['Ledger_Name'].str.contains('LEDGER_NAME')]
+        df_APAR["MonthYear"] = pd.to_datetime(df_APAR["Accounting_Date"] ).dt.strftime('%b-%y')
+    
+    
+        df_Interco_Balance = pd.read_csv(file_path2)
+    
+        df_Interco_Reval = pd.read_csv(file_path3)
+    
+        df_Nett_Sett = pd.read_csv(file_path4)
+        df_Nett_Sett["MonthYear"] = pd.to_datetime(df_Nett_Sett["GL_DATE"] ).dt.strftime('%b-%y')
+        ##### need to check why not standardized
+        df_Nett_Sett['INTERCO_TRX_TYPE'] = df_Nett_Sett['INTERCO_TRX_TYPE'].replace(['000000'], ['0000'])
+    
+        df_APAR['Customer_Account_Name']=df_APAR['Customer_Account_Name'].astype(str)
+        df_APAR['Bill_To_Customer_Number']=df_APAR['Bill_To_Customer_Number'].astype(str)
+        df_APAR['Interco_Code']=df_APAR['Interco_Code'].astype(str)
+        df_APAR['Account_Code']=df_APAR['Account_Code'].astype(str)
+        df_APAR['Entered_Amount']=df_APAR['Entered_Amount'].astype(float)
+        df_APAR= df_APAR[~df_APAR['Customer_Account_Name'].str.contains('Customer Account Name')]
+        df_APAR= df_APAR[~df_APAR['Accounting_Date'].isnull()]
+    
+        #####get file date############Added by Nidzam
+        data_month=df_APAR['Accounting_Date'].max()
+        print(data_month)
+        
+        #max_date_value=data_month.split('.')[0].replace('T','')
+        last_day_of_prev_month=datetime.datetime.strptime(data_month, "%Y-%m-%d")
+        #last_day_of_prev_month=datetime.datetime.strptime(data_month, "%m/%d/%Y")
+        
+        #last_day_of_prev_month = max_date_value.replace(day=1) - timedelta(days=1)
+        print("Last day of prev month:", last_day_of_prev_month)
+        
+        #df_APAR.replace(['None', 'nan'], np.nan, inplace=True)
+        final_format= last_day_of_prev_month.strftime("%B %d,%Y")
+        YYMM_format= last_day_of_prev_month.strftime("%y%m")
+        
+        #get mapping (please replace this once the database is fix)
+        # import gspread as gs
+        # gc = gs.service_account(filename= token_path)
+        # sh = gc.open_by_url('https://docs.google.com/spreadsheets/d/1M38aX1NuVNZ3I31kKdyBJsQcm7934OesvrKQ70ER7B8')
+        sh = Mapping_Sheet
+        #get mapping from 'Google shared drive' sheet
+        #ws = sh.worksheet('Google shared drive')
+        df_mapping = pd.read_excel(sh, sheet_name='Google shared drive')
+        df_mapping['BU'] = df_mapping['BU'].astype(str)
+    
+        #get mapping from 'Mapping_Interco Customer/Supplier' sheet
+        #ws2 = sh.worksheet('Mapping_Interco Customer/Suppliers')
+        
+        #df_mapping2 = pd.read_excel(sh, sheet_name='Mapping_Interco CustomerSupplie')
+        df_mapping2 = pd.read_excel(sh, sheet_name='180Mapping')
+        df_mapping2 = df_mapping2[["Supplier/Customer Name","Inter Company Name","Company code","Reporting currency","Business Unit","Ledger Name GL"]]
+        df_mapping2 = df_mapping2.drop_duplicates(subset=['Supplier/Customer Name'])
+        df_mapping2 = df_mapping2[df_mapping2["Company code"] != "#N/A"]
+        df_mapping2["Company code"] = df_mapping2["Company code"].astype(str)
+    
+        df_mapping_BU = df_mapping2[["Ledger Name GL","Inter Company Name","Company code","Business Unit"]].drop_duplicates(subset=["Ledger Name GL"])
+        df_mapping_BU["Business Unit"] = df_mapping_BU["Business Unit"].astype(str)
+    
+        #get mapping from 'Legal Name to Interco Company Mapping' sheet
+        #ws3 = sh.worksheet('Legal Name to Interco Company Mapping')
+        df_mapping3 = pd.read_excel(sh, sheet_name='Legal Name to Interco Company M')
+        df_mapping3['Interco Code'] = df_mapping3['Interco Code'].astype(str)
+        df_mapping3['BUSINESS_UNIT'] = df_mapping3['BUSINESS_UNIT'].astype(str)
+        # df_mapping3 = df_mapping3[['INTERCO_COMPANY','BUSINESS_UNIT']]
+    
+        #get mapping from 'Interco Code - ledger name map' sheet
+        #ws4 = sh.worksheet('Interco Code - ledger name mapping')
+        
+        df_mapping4 = pd.read_excel(sh, sheet_name='Interco Code - ledger name map')
+    
+        #get mappidf_mapping_BUng from 'sub account1 mapping' sheet
+        #ws5 = sh.worksheet('sub account1 mapping')
+        df_mapping5 = pd.read_excel(sh, sheet_name='sub account1 mapping')
+    
+        
+        # get data for AP_AR after combine with mapping
+    
+        new_df_APAR2 = df_APAR.merge(df_mapping2[["Supplier/Customer Name","Inter Company Name","Company code","Reporting currency","Business Unit"]].rename({"Company code":"Interco Code",'Business Unit': 'Interco_BU'}, axis=1),
+                                        left_on='Customer_Account_Name', 
+                                        right_on='Supplier/Customer Name',
+                                        how='left')
+        new_df_APAR3 = new_df_APAR2.merge(df_mapping_BU[['Ledger Name GL','Business Unit']].rename({'Ledger Name GL': 'Ledger Name','Business Unit': 'BU'}, axis=1),
+                                        left_on='Ledger_Name',
+                                        right_on='Ledger Name',
+                                        how='left' )
+        # new_df_APAR = df_APAR.merge(df_mapping[['Reporting Currency','BU',"Ledger Name"]],left_on="Ledger_Name",right_on="Ledger Name",how='left')
+        # new_df_APAR2 = new_df_APAR.merge(df_mapping2,left_on='Customer_Account_Name', right_on='Customer Name',how='left')
+        # new_df_APAR3 = new_df_APAR2.merge(df_mapping3[["BUSINESS_UNIT","INTERCO_COMPANY","Interco Code"]].rename({'BUSINESS_UNIT': 'Interco_BU'}, axis=1),left_on='Intercompany Name', right_on='INTERCO_COMPANY',how='left')
+    
+        max_data_year = max(new_df_APAR3["Accounting_Date"])
+    
+        # get data for Interco_Reval after combine with mapping
+        df_Interco_Reval= df_Interco_Reval[~df_Interco_Reval['LEDGER_NAME'].str.contains('LEDGER_NAME')]
+        new_df_Interco_Reval = df_Interco_Reval.merge(df_mapping_BU[['Ledger Name GL','Business Unit']].rename({'Ledger Name GL': 'Ledger Name','Business Unit': 'BU'}, axis=1),
+                                                      left_on="LEDGER_NAME",
+                                                      right_on="Ledger Name",
+                                                      how='left')
+        new_df_Interco_Reval = new_df_Interco_Reval.merge(df_mapping_BU[["Business Unit","Inter Company Name","Company code"]].rename({"Inter Company Name":"INTERCO_COMPANY",'Business Unit': 'Interco_BU',"Company code":"Interco Code"}, axis=1),
+                                                          left_on='INTERCO_CODE', 
+                                                          right_on='Interco Code',
+                                                          how='left')
+    
+        # # get data for Interco_Balance after combine with mapping
+        df_Interco_Balance= df_Interco_Balance[~df_Interco_Balance['LEDGER_NAME'].str.contains('LEDGER_NAME')]
+        new_df_Interco_Balance = df_Interco_Balance.merge(df_mapping_BU[['Ledger Name GL','Business Unit']].rename({'Ledger Name GL': 'Ledger Name','Business Unit': 'BU'}, axis=1),
+                                                      left_on="LEDGER_NAME",
+                                                      right_on="Ledger Name",
+                                                      how='left')
+        new_df_Interco_Balance = new_df_Interco_Balance.merge(df_mapping_BU[["Business Unit","Inter Company Name","Company code"]].rename({"Inter Company Name":"INTERCO_COMPANY",'Business Unit': 'Interco_BU',"Company code":"Interco Code"}, axis=1),
+                                                          left_on='INTERCO_CODE', 
+                                                          right_on='Interco Code',
+                                                          how='left')
+    
+        # # get data for Net Settlement after combine with mapping
+        df_Nett_Sett= df_Nett_Sett[~df_Nett_Sett['INVOICE_NUM'].str.contains('INVOICE_NUM')]
+        new_df_Nett_Sett3 = df_Nett_Sett.merge(df_mapping2[["Supplier/Customer Name","Business Unit","Inter Company Name","Company code"]].rename({"Inter Company Name":"INTERCO_COMPANY",'Business Unit': 'Interco_BU',"Company code":"Interco Code"}, axis=1),
+                                              left_on='SUPPLIER_NAME', 
+                                              right_on="Supplier/Customer Name",
+                                              how='left')
+        # new_df_Nett_Sett2 = new_df_Nett_Sett.merge(df_mapping3[['BUSINESS_UNIT','LEGAL_ENTITY_NAME']],left_on="BUSINESS_UNIT",right_on="BUSINESS_UNIT",how='left')
+        # new_df_Nett_Sett3 = new_df_Nett_Sett2.merge(df_mapping3[["BUSINESS_UNIT","INTERCO_COMPANY"]].rename({'BUSINESS_UNIT': 'Interco_BU'}, axis=1),left_on='Intercompany Name', right_on='INTERCO_COMPANY',how='left')
+    
+        # #getting all the unique in to iterate
+        BU_list = df_mapping3['BUSINESS_UNIT'].unique()
+        BU_null_list = new_df_APAR3[new_df_APAR3['BU'].isnull()]['Ledger_Name'].unique()
+    
+        data_month=df_APAR['Accounting_Date'].max()
+        max_date_value=data_month.split('.')[0].replace('T','')
+        #last_day_of_prev_month=datetime.datetime.strptime(max_date_value, "%Y-%m-%d%H:%M:%S")
+        last_day_of_prev_month=datetime.datetime.strptime(max_date_value, "%Y-%m-%d")
+        #last_day_of_prev_month=datetime.datetime.strptime(max_date_value, "%m/%d/%Y")
+        
+        #last_day_of_prev_month = max_date_value.replace(day=1) - timedelta(days=1)
+        print("Last day of prev month:", last_day_of_prev_month)
+    
+        final_format= last_day_of_prev_month.strftime("%B %d,%Y")
+        YYMM_format= last_day_of_prev_month.strftime("%y%m")
+    
+        ##### reset dashboard data #####################
+        file_list = ['Invoice_CN.csv','Payment_Receipt.csv','Adjustment.csv','Net_Settlement.csv','Net_Movementt.csv']
+        folder_path = Dashboard_Path
+        for file in file_list:
+            if os.path.exists(folder_path + file):
+                os.remove(folder_path + file)
+    
+    #     BU_list = df_mapping3['BUSINESS_UNIT'].unique()
+        BU_list=[BU_name]
+        compare_data=pd.DataFrame()
+        
+        compare_data = pd.DataFrame(columns=('AOC','summary_general_category'))
+        for business_unit in BU_list:
+            if pd.isnull(business_unit):
+                pass
+            else:
+                Interco_BU_list = new_df_APAR3[new_df_APAR3['BU']==business_unit]['Interco_BU'].unique()
+                Interco_BU_list = ['TAX']
+    
+                for interco_business_unit in Interco_BU_list:
+                    if pd.isnull(interco_business_unit):
+                        pass
+                    else:
+                        company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==business_unit]['LEGAL_ENTITY_NAME']
+                        interco_company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==interco_business_unit]['LEGAL_ENTITY_NAME']
+    
+                        combine_pivot=get_ARAP_data(business_unit,interco_business_unit)
+                        new_data = new_df_APAR3[(new_df_APAR3['BU']== business_unit) & (new_df_APAR3['Interco_BU']==interco_business_unit)]
+                        new_data = new_data.sort_values(by="Accounting_Date",ascending=True)
+    
+                        new_data_rev = new_df_APAR3[(new_df_APAR3['BU']== interco_business_unit) & (new_df_APAR3['Interco_BU']==business_unit)]
+                        new_data_rev = new_data_rev.sort_values(by="Accounting_Date",ascending=True)
+    
+    
+                        Account_Code = new_data['Account_Code'].unique()
+                        category_list  = sorted(new_data["Category"].unique())
+                        category_len = len(category_list)
+                        currency_list = sorted(new_data["Document_Currency"].unique())
+    
+                        Account_Code_rev = new_data_rev['Account_Code'].unique()
+                        category_list_rev  = sorted(new_data_rev["Category"].unique())
+                        currency_list_rev = sorted(new_data_rev["Document_Currency"].unique())                    
+    
+                        print(Account_Code,Account_Code_rev)
+                        Account_Code_df=np.concatenate((Account_Code, Account_Code_rev))
+                        Account_Code_df=np.unique(Account_Code_df)
+    
+                        Account_Code_df=Account_Code_df.astype(set)
+                        Account_Code_df=list(Account_Code_df)
+    
+                        Account_Code_df=[str(int(float(x))) for x in Account_Code_df]
+                        print(Account_Code_df)
+                        Account_Code_Str=""
+    
+                        Account_Code_Str =','.join(Account_Code_df)
+    
+                        print(Account_Code_Str)
+                        ################################# Nets settlement processing##########################################
+                        new_data_Nett_Sett = new_df_Nett_Sett3[(new_df_Nett_Sett3['BUSINESS_UNIT']== business_unit) & (new_df_Nett_Sett3['Interco_BU']==interco_business_unit)]
+                        new_data_Nett_Sett_rev = new_df_Nett_Sett3[(new_df_Nett_Sett3['BUSINESS_UNIT']== interco_business_unit) & (new_df_Nett_Sett3['Interco_BU']==business_unit)]
+    
+                        new_data_Nett_Sett = new_data_Nett_Sett.sort_values(by="GL_DATE",ascending=True)
+                        new_data_Nett_Sett_rev = new_data_Nett_Sett_rev.sort_values(by="GL_DATE",ascending=True)
+    
+    
+                        category_list_Nett_Sett  = sorted(new_data_Nett_Sett["INTERCO_TRX_TYPE"].unique())
+                        currency_list_Nett_Sett = sorted(new_data_Nett_Sett["SETTLEMENT_CURRENCY"].unique())
+    
+                        category_list_Nett_Sett_rev  = sorted(new_data_Nett_Sett_rev["INTERCO_TRX_TYPE"].unique())
+                        currency_list_Nett_Sett_rev = sorted(new_data_Nett_Sett_rev["SETTLEMENT_CURRENCY"].unique())
+    
+                        ##################Selecting the longer list###########################################################
+                        merged_list_cat = sorted(list(set(category_list+category_list_rev+category_list_Nett_Sett+category_list_Nett_Sett_rev)))
+                        category_list = merged_list_cat
+                        merged_list_curr = sorted(list(set(currency_list+currency_list_rev+currency_list_Nett_Sett+currency_list_Nett_Sett_rev)))
+                        currency_list = merged_list_curr
+                        category_len_1 = len(category_list)
+    
+                        ##################Selecting the longer month list ###########################################################
+    
+                        # df_APAR["MonthYear"] = pd.to_datetime(df_APAR["Accounting_Date"] ).dt.strftime('%b-%y')
+                        max_date = max(new_data["Accounting_Date"])
+                        min_date = min(new_data["Accounting_Date"])
+    
+                        try:
+                            max_date_rev = max(new_data_rev["Accounting_Date"])
+                            min_date_rev = min(new_data_rev["Accounting_Date"])
+                        except:
+                            max_date_rev=max_date
+                            min_date_rev=min_date
+    
+                        if min_date < min_date_rev: 
+                            min_date = min_date
+                        else: 
+                            min_date = min_date_rev
+    
+                        if max_date > max_date_rev:
+                            max_date = max_date
+                        else:
+                            max_date = max_date_rev
+    
+                        MonthYear_list= pd.date_range(min_date,max_date,freq="M")
+                        MonthYear_list = pd.to_datetime(MonthYear_list).strftime('%b-%y')                
+                       # MonthYear_list = new_data['MonthYear'].unique()
+                        index_month = MonthYear_list
+                        #index_month = MonthYear_list[0]
+    
+                        cat_series = pd.Series(category_list)
+                        cat_series = pd.DataFrame(cat_series)
+                        cat_series = cat_series.merge(df_mapping5, left_on=0, right_on="Categories",how='left')
+                        cat_series=cat_series[[0,"Inter-Company Categories"]].fillna("Default")
+    
+                        print ("Done")
+                        ###############Create report#########################
+                        if not os.path.isdir(Report_Folder+"\{}".format(business_unit)):
+                            os.makedirs(Report_Folder+"\{}".format(business_unit))
+                        rename=str(interco_business_unit)
+                        if rename.endswith(".0"):
+                            rename =  rename.rstrip(".0")
+                        filepath = "{}-Interco Movement_{}-{}.xlsx".format(YYMM_format,business_unit,rename)
+                        filename = Template_Path5
+                        filename_2 = Report_Folder+"\{}\{}".format(business_unit,filepath)
+                        
+    
+                        wb = load_workbook(filename)
+                        ws = wb['Intercompany Movement']
+    
+                        ################## formatting ###########
+                        company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==business_unit]['LEGAL_ENTITY_NAME']
+                        interco_company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==interco_business_unit]['LEGAL_ENTITY_NAME']
+    
+                        ws["A1"]= "Intercompany Movement {}-{}".format(business_unit,interco_business_unit)
+                        ws["A1"].font=Font(bold=True,size=10,name='Airal')
+                        ws["A2"] = "Main Account : "+str(Account_Code_Str)
+    
+                        ws.cell(4,1).value = "{} Movement in {}'s Book".format(interco_business_unit,business_unit)
+                        ws.cell(4,1).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(8,1).value ="Interco Category"
+                        ws.cell(8,1).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(8,2).value ="Interco Category Name"
+                        ws.cell(8,2).font=Font(bold=True,size=10,name='Airal')
+                        wb.save(filename_2)
+    
+                        ## insert Interco_Cat
+                        insert_cat(filename_2,"Intercompany Movement",8,0)
+    
+                        ## create start point dataframe (carry forward value from previous year)
+                        start_point_df = create_start_point(max_data_year,new_data,new_data_Nett_Sett,category_list,currency_list,MonthYear_list)
+    
+                        ## create variable for year and list of month in the year
+                        this_year_var,ThisYear_MonthYear_list,index_month = get_year_list(max_data_year)
+    
+                        ############### insert start point #####################
+                        startcol = 2
+                        starting_row = 7
+                        len_df_column = len(start_point_df.columns)
+                        len_df_row = len(start_point_df)
+    
+                        insert_starting_point(filename_2,"Intercompany Movement",starting_row,startcol,category_len_1,8 + len_df_row+1)    
+    
+    
+                        startcol = startcol + len(start_point_df.columns) +1
+                        starting_col=startcol+1                
+    
+                        #################create dashboard data\not needed for now#######################
+                       # for MonthYear in MonthYear_list:
+                    #   create_data_for_dashboard(business_unit,interco_business_unit,MonthYear,index_month)
+                        
+                        #############################################################
+    
+                        for MonthYear in ThisYear_MonthYear_list: #change to ThisYear_MonthYear_list
+    
+                            pd_Invoice_CN,pd_Payment_Receipt,pd_Adjustment,pd_Net_Settlement,pd_Net_Movementt = create_table_movement(new_data,
+                                                                                                                 new_data_Nett_Sett,
+                                                                                                                 category_list,
+                                                                                                                 currency_list,
+                                                                                                                 MonthYear)
+    
+                            len_df_column = len(pd_Invoice_CN.columns)
+                            len_df_row = len(pd_Invoice_CN)
+    
+                            df_to_excel(7,startcol,filename_2,len_df_column)
+    
+                            wb = load_workbook(filename_2)
+                            ws = wb['Intercompany Movement']
+                            top_left_cell = ws.cell(row=1, column=3)
+                            ws.freeze_panes = top_left_cell
+                            thin = Side(border_style="thin", color="000000")
+    
+                            invoice_in_startcell,invoice_in_last_cell=create_table(7,starting_col,len_df_column,
+                                                                                   "Invoice/CN","FCF3CF",category_len_1)
+    
+                            payment_start,payment_last=create_table(7,starting_col+len_df_column,len_df_column*2,
+                                                                    "Payment/Receipt","FCF3CF",category_len_1)
+    
+                            create_table(7,starting_col+len_df_column*2,len_df_column*3,"Adjustment",
+                                         "FCF3CF",category_len_1)
+    
+                            create_table(7,starting_col+len_df_column*3,len_df_column*4, "Net-off Settlement",
+                                         "FCF3CF",category_len_1)
+    
+                            start_cell_merge,last_cell_merge=create_table(7,starting_col+len_df_column*4,len_df_column*5,
+                                                                          "Net Movement","DDDDDD",category_len_1)
+    
+                            #calculation for Net movement field
+                            for y in range(len_df_column):
+                                for i in range(len_df_row):
+                                    cell_sum = ws[start_cell_merge].offset(i+2,y).coordinate
+                                    list_cell =[]
+                                    for x in range(4):
+                                        x=x+1
+                                        cell = ws[cell_sum].offset(0,-len_df_column*x).coordinate
+                                        list_cell.append(cell)
+                                    str_cell = '+'.join(list_cell)
+                                    ws[cell_sum] = "="+str_cell
+    
+                            start_cell_merge,last_cell_merge=create_table(7,
+                                                             starting_col+len_df_column*5,
+                                                             len_df_column*6,
+                                                             "Net Balances",
+                                                             "DDDDDD",category_len_1)
+    
+                            # calculation for Net Balances
+                            for y in range(len_df_column):
+                                for i in range(len_df_row):
+                                    cell_sum = ws[start_cell_merge].offset(i+2,y).coordinate
+                                    cell1 = ws[cell_sum].offset(0,-len_df_column).coordinate
+                                    cell2 = ws[cell_sum].offset(0,-len_df_column*6-1).coordinate
+                                    ws[cell_sum]= "={}+{}".format(cell1,cell2)
+    
+                            # inputing currency list
+                            for x in range(len(currency_list)):
+                                ws.cell(8,starting_col+len_df_column*4 + x).value = currency_list[x]
+                                ws.cell(8,starting_col+len_df_column*4 + x).font=Font(bold=True,size = 10, name = 'Arial')
+                                ws.cell(8,starting_col+len_df_column*5 + x).value = currency_list[x]
+                                ws.cell(8,starting_col+len_df_column*5 + x).font=Font(bold=True,size = 10, name = 'Arial')
+    
+                            # merging by Month Year
+                            start_cell_merge = ws.cell(6,starting_col).coordinate
+                            last_cell_merge= ws.cell(6,starting_col+len_df_column*6-1).coordinate
+                            start_month_merge = ws.cell(6,starting_col-2).coordinate
+                            last_month_merge= ws.cell(6,starting_col+len_df_column*6).coordinate
+                            ws.merge_cells("{}:{}".format(start_cell_merge,last_cell_merge))
+                            ws[start_cell_merge] = MonthYear
+                            ws[start_cell_merge].alignment = Alignment(horizontal='center', vertical='center')
+                            #ws[start_cell_merge].fill = PatternFill("solid", fgColor="5DADE2")
+                            ws[start_cell_merge].fill = PatternFill("solid", fgColor="C0C0C0")
+                            range2=ws[start_cell_merge:last_cell_merge]
+                            start_cell_line = ws.cell(6,3).coordinate
+                            monthline_range =ws[start_cell_line:last_month_merge]
+                            border=Border(top=Side(style='thick'), left=thin, right=thin, bottom=thin)
+                            for cell in monthline_range:
+                                for x in cell:
+                                    x.border=Border(top=Side(style='thick'))
+                            for cell in range2:
+                                for x in cell:
+                                    x.font=Font(bold=True, size=10, name = 'Airal')
+                                    x.border=border
+    
+    
+                            # calculate sum of all column 
+                            sum_val = [] #add for self test
+                            for val in range(len_df_column*6):
+                                EndCellPosition = ws.cell(8 + len_df_row+1,starting_col+val).coordinate
+                                StartSumCell =  ws[EndCellPosition].offset(-len_df_row,0).coordinate
+                                EndSumCell = ws[EndCellPosition].offset(-1,0).coordinate
+                                ws[EndCellPosition] = "=SUM({}:{})".format(StartSumCell,EndSumCell)
+                                sum_val.append(ws[EndCellPosition].coordinate)
+                            sum_val = sum_val[-len_df_column:]
+    
+    
+                            wb.save(filename_2)
+                            # iterating the loop
+                            startcol = startcol + len_df_column*6 +1
+                            starting_col= startcol+1
+    
+    
+                        ws.cell(8 + len_df_row+1,1).value ="Closing Balance"
+                        ws.cell(8 + len_df_row+1,1).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(8 + len_df_row+2,1).value ="Balance as per system"
+                        ws.cell(8 + len_df_row+2,1).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(8 + len_df_row+3,1).value ="Variance"
+                        ws.cell(8 + len_df_row+3,1).font=Font(color='FF0000',bold=False,size=10,name='Airal',italic=True)
+    
+                        cal_result = bal_per_sys(new_data,currency_list)
+    
+                        for i in cal_result:
+                            coor1 = ws.cell(8 + len_df_row+2,startcol-len(currency_list)).coordinate
+                            coor2 = ws[coor1].offset(-1,0).coordinate
+    
+                            ws.cell(8 + len_df_row+2,startcol-len(currency_list)).value = i
+                            ws.cell(8 + len_df_row+2,startcol-len(currency_list)).number_format = '#,##0.00;(#,##0.00)'
+                            ws.cell(8 + len_df_row+3,startcol-len(currency_list)).value = "={}-{}".format(coor1,coor2)
+                            ws.cell(8 + len_df_row+3,startcol-len(currency_list)).number_format = '#,##0.00;(#,##0.00)'
+                            ws.cell(8 + len_df_row+3,startcol-len(currency_list)).font=Font(bold=False,size=10,name='Airal',italic=True,color='FF0000')
+                            startcol = startcol+1
+    
+                        wb.save(filename_2)
+    
+    
+    
+                        ################################## reverse ###############################################################
+                        new_data = new_df_APAR3[(new_df_APAR3['BU']== interco_business_unit) & (new_df_APAR3['Interco_BU']==business_unit)]
+                        new_data = new_data.sort_values(by="Accounting_Date",ascending=True)
+    
+                        ################################# Nets settlement processing##########################################
+                        new_data_Nett_Sett = new_df_Nett_Sett3[(new_df_Nett_Sett3['BUSINESS_UNIT']== business_unit) & (new_df_Nett_Sett3['Interco_BU']==interco_business_unit)]
+                        new_data_Nett_Sett = new_data_Nett_Sett.sort_values(by="GL_DATE",ascending=True)
+    
+                        ######## Get starting point for 2nd table
+    
+                        starting_row = len_df_row + 8 + 7
+    
+                        ################## reversing BU and Interco BU ###########
+    
+                        company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==business_unit]['LEGAL_ENTITY_NAME']
+                        interco_company_name = df_mapping3[df_mapping3['BUSINESS_UNIT']==interco_business_unit]['LEGAL_ENTITY_NAME']
+    
+                        ws.cell(starting_row,1).value = "{} Movement in {}'s Book".format(business_unit,interco_business_unit)
+                        ws.cell(starting_row,1).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(starting_row+4,1).value ="Interco Category"
+                        ws.cell(starting_row+4,1).font=Font(bold=True,size=10,name='Airal')
+                        wb.save(filename_2)
+    
+                        ## insert Interco_Cat
+                        insert_cat(filename_2,"Intercompany Movement",starting_row+4,0)
+    
+    
+                        ## create start point dataframe (carry forward value from previous year)
+                        start_point_df = create_start_point(max_data_year,new_data,new_data_Nett_Sett,category_list,currency_list,MonthYear_list)
+    
+                         ############### insert start point #####################
+                        startcol = 2
+                        len_df_column = len(start_point_df.columns)
+                        len_df_row = len(start_point_df)
+    
+                        insert_starting_point(filename_2,"Intercompany Movement",starting_row+3,startcol,
+                                              category_len_1,starting_row+4 + len_df_row+1) 
+    
+    
+                        startcol = startcol + len(start_point_df.columns) +1
+                        starting_col=startcol+1  
+    
+        #                 startcol = 2
+        #                 starting_col=3
+                        for MonthYear in ThisYear_MonthYear_list: #change to ThisYear_MonthYear_list
+                            pd_Invoice_CN,pd_Payment_Receipt,pd_Adjustment,pd_Net_Settlement,pd_Net_Movementt = create_table_movement(new_data,
+                                                                                                                 new_data_Nett_Sett,
+                                                                                                                 category_list,
+                                                                                                                 currency_list,
+                                                                                                                 MonthYear)
+                            len_df_column = len(pd_Invoice_CN.columns)
+                            len_df_row = len(pd_Invoice_CN)
+                            df_to_excel(starting_row+3,startcol,filename_2,len_df_column)
+    
+    
+                            wb = load_workbook(filename_2)
+                            ws = wb['Intercompany Movement']
+                            thin = Side(border_style="thin",     )
+    
+                            create_table(starting_row+3,
+                                         starting_col,
+                                         len_df_column,
+                                         "Invoice/CN",
+                                         "FCF3CF",category_len_1)
+                            create_table(starting_row+3,
+                                         starting_col+len_df_column,
+                                         len_df_column*2,
+                                         "Payment/Receipt",
+                                         "FCF3CF",category_len_1)
+                            create_table(starting_row+3,
+                                         starting_col+len_df_column*2,
+                                         len_df_column*3,
+                                         "Adjustment",
+                                         "FCF3CF",category_len_1)
+                            create_table(starting_row+3,
+                                         starting_col+len_df_column*3,
+                                         len_df_column*4,
+                                         "Net-off Settlement",
+                                         "FCF3CF",category_len_1)
+                            start_cell_merge,last_cell_merge=create_table(starting_row+3,
+                                                             starting_col+len_df_column*4,
+                                                             len_df_column*5,
+                                                             "Net Movement",
+                                                             "DDDDDD",category_len_1)
+    
+                            #calculation for Net movement field
+    
+                            for y in range(len_df_column):
+                                for i in range(len_df_row):
+                                    cell_sum = ws[start_cell_merge].offset(i+2,y).coordinate
+                                    list_cell =[]
+                                    for x in range(4):
+                                        x=x+1
+                                        cell = ws[cell_sum].offset(0,-len_df_column*x).coordinate
+                                        list_cell.append(cell)
+                                    str_cell = '+'.join(list_cell)
+                                    ws[cell_sum] = "="+str_cell
+    
+                            start_cell_merge,last_cell_merge=create_table(starting_row+3,
+                                                             starting_col+len_df_column*5,
+                                                             len_df_column*6,
+                                                             "Net Balances",
+                                                             "DDDDDD",category_len_1)
+    
+                            # calculation for Net Balance
+                            for y in range(len_df_column):
+                                for i in range(len_df_row):
+                                    cell_sum = ws[start_cell_merge].offset(i+2,y).coordinate
+                                    cell1 = ws[cell_sum].offset(0,-len_df_column).coordinate
+                                    cell2 = ws[cell_sum].offset(0,-len_df_column*6-1).coordinate
+                                    ws[cell_sum]= "={}+{}".format(cell1,cell2)                            
+    
+    
+                            # inputing currency list
+                            for x in range(len(currency_list)):
+                                ws.cell(starting_row+4,starting_col+len_df_column*4 + x).value = currency_list[x]
+                                ws.cell(starting_row+4,starting_col+len_df_column*4 + x).font=Font(bold=True,size = 10, name = 'Arial')
+                                ws.cell(starting_row+4,starting_col+len_df_column*5 + x).value = currency_list[x]
+                                ws.cell(starting_row+4,starting_col+len_df_column*5 + x).font=Font(bold=True,size = 10, name = 'Arial')
+    
+                            # merging by Month Year
+                            start_cell_merge = ws.cell(starting_row+2,starting_col).coordinate
+                            last_cell_merge= ws.cell(starting_row+2,starting_col+len_df_column*6-1).coordinate
+                            start_month_merge = ws.cell(starting_row+2,starting_col-2).coordinate
+                            last_month_merge= ws.cell(starting_row+2,starting_col+len_df_column*6).coordinate
+                            ws.merge_cells("{}:{}".format(start_cell_merge,last_cell_merge))
+                            ws[start_cell_merge] = MonthYear
+                            ws[start_cell_merge].alignment = Alignment(horizontal='center', vertical='center')
+                            ws[start_cell_merge].fill = PatternFill("solid", fgColor="5DADE2")
+                            #ws[start_cell_merge].fill = PatternFill("solid", fgColor="C0C0C0")
+                            
+                            range2=ws[start_cell_merge:last_cell_merge]
+                            start_cell_line = ws.cell(starting_row+2,3).coordinate
+                            Month_row_line =ws[start_cell_line:last_month_merge]
+        #                     Month_row_line =ws[start_month_merge:last_month_merge]
+                            for cell in Month_row_line:
+                                for x in cell:
+                                    x.border=Border(top=Side(style='thick'))
+                            border=Border(left=thin, right=thin, bottom=thin,top=Side(style='thick'))
+                            for cell in range2:
+                                for x in cell:
+                                    x.font=Font(bold=True, size=10, name = 'Airal')
+                                    x.border=border
+                            wb.save(filename_2)
+    
+                            # calculate sum of all column 
+                            for val in range(len_df_column*6):
+                                EndCellPosition = ws.cell(starting_row+4 + len_df_row+1,starting_col+val).coordinate
+                                StartSumCell =  ws[EndCellPosition].offset(-len_df_row,0).coordinate
+                                EndSumCell = ws[EndCellPosition].offset(-1,0).coordinate
+                                ws[EndCellPosition] = "=SUM({}:{})".format(StartSumCell,EndSumCell)
+    
+                            wb.save(filename_2)
+                            # iterating the loop
+                            startcol = startcol + len_df_column*6 +1
+                            starting_col= startcol+1
+    
+                        ws.cell(starting_row+4,2).value ="Interco Category Name"
+                        ws.cell(starting_row+4,2).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(starting_row+4 + len_df_row+1,1).value ="Closing Balance"
+                        ws.cell(starting_row+4 + len_df_row+1,1).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(starting_row+4 + len_df_row+2,1).value ="Balance as per system"
+                        ws.cell(starting_row+4 + len_df_row+2,1).font=Font(bold=True,size=10,name='Airal')
+                        ws.cell(starting_row+4 + len_df_row+3,1).value ="Variance"
+                        ws.cell(starting_row+4 + len_df_row+3,1).font=Font(bold=False,size=10,name='Airal',italic=True,color='FF0000')
+                        cal_result = bal_per_sys(new_data,currency_list)
+    
+                        for column_cells in ws.columns:
+                            length = max(len(str(cell.value)) for cell in column_cells)
+                            ws.column_dimensions[column_cells[0].column_letter].width = length
+                        for i in cal_result:
+                            coor1 = ws.cell(starting_row+4 + len_df_row+2,startcol-len(currency_list)).coordinate
+                            coor2 = ws[coor1].offset(-1,0).coordinate
+    
+                            ws.cell(starting_row+4 + len_df_row+2,startcol-len(currency_list)).value = i
+                            ws.cell(starting_row+4 + len_df_row+2,startcol-len(currency_list)).number_format = '#,##0.00;(#,##0.00)'
+                            ws.cell(starting_row+4 + len_df_row+3,startcol-len(currency_list)).value = "={}-{}".format(coor1,coor2)
+                            startcol = startcol+1
+                            ws.cell(starting_row+4 + len_df_row+3,startcol-len(currency_list)).number_format = '#,##0.00;(#,##0.00)'
+                            ws.cell(starting_row+4 + len_df_row+3,startcol-len(currency_list)-1).font=Font(bold=False,size=10,name='Airal',color='FF0000',italic=True)
+    
+                        wb.save(filename_2)
+                        pivot_table,Accounted_Amount_Reval,Accounted_Amount_Balance,report_currency = get_report_data(business_unit,interco_business_unit)
+                        Grand_total_value,checking_value=create_report_pairing(business_unit,interco_business_unit)
+                        wb=load_workbook(filename_2)
+                        wb.create_sheet("APAR Combine",2)
+    
+                        ARAP_df = pd.DataFrame(combine_pivot, columns= ['Ledger_Name','BU','Bill_To_Customer_Number','Customer_Account_Name', 'Transaction_Date', 'RECEIPT_NUMBER', 'TRANSACTION_NUMBER','Account_Code','ACCOUNT_DESCRIPTION','Document_Currency','Entered_Amount','LEDGER_CURRENCY', 'Accounted_Amount', 'ACCOUNTING_PERIOD','Accounting_Date','LINE_DESCRIPTION', 'Journal_Category','JOURNAL_LAST_UPDATED_BY_USERNAME', 'Interco_Code','Category', 'REFERENCE', 'Interco_Category_Name'])
+                        ARAP_df = ARAP_df.rename(columns={'TRANSACTION_NUMBER': 'Invoice/Transaction_Number'})
+                        ARAP_df = ARAP_df.rename(columns={'ACCOUNTING_PERIOD': 'Accounting_Period'})
+                        ARAP_df = ARAP_df.rename(columns={'LINE_DESCRIPTION': 'Line_Description'})
+                        ARAP_df = ARAP_df.rename(columns={'JOURNAL_LAST_UPDATED_BY_USERNAME': 'Journal_Last_Updated_By_Username'})
+                        ARAP_df = ARAP_df.rename(columns={'ACCOUNT_DESCRIPTION': ' Account_Description'})
+                        ARAP_df = ARAP_df.rename(columns={'REFERENCE': 'Reference'})
+                        ARAP_df = ARAP_df.rename(columns={'LEDGER_CURRENCY': 'Reporting_Currency'}) 
+                        ARAP_df = ARAP_df.rename(columns={'RECEIPT_NUMBER': 'Payment/Receipt Number'})
+                        ARAP_df = ARAP_df.rename(columns={'Bill_To_Customer_Number': 'Customer/Vendor Code'}) 
+                        ARAP_df = ARAP_df.rename(columns={'Customer_Account_Name': 'Customer/Vendor Name'})                                              #ws.title = "APAR Combine"
+                        ws = wb['APAR Combine']
+                        pd.io.formats.excel.ExcelFormatter.header_style = None
+                        writer = pd.ExcelWriter(filename_2, engine='openpyxl')
+                        writer.book = wb
+                        writer.sheets = {ws.title: ws for ws in wb.worksheets}
+                        headerfont = Font(color='f3f6f4')
+                        ARAP_df.to_excel(writer,sheet_name="APAR Combine", startrow=0, startcol=0,index = False,header= True)
+                        len_APAR_df=len(ARAP_df)
+                        len_APAR_df=len_APAR_df+1
+                        border=Border(top=thin, left=thin, right=thin, bottom=thin)
+                        for cols in ws.iter_cols(min_row=0, max_row=1, min_col=1, max_col=22): 
+                            for cell in cols: 
+                                cell.fill = PatternFill(start_color='9fc5e8', end_color='9fc5e8',fill_type = "solid")
+                                # cell.fill = PatternFill(start_color='C0C0C0', end_color='C0C0C0',fill_type = "solid")
+                                cell.alignment = Alignment(horizontal='left')
+                                cell. font = headerfont
+                                cell.border=border
+                        for column_cells in ws.columns:
+                            ws.column_dimensions[column_cells[0].column_letter].width = 20
+                        Range_ARAP=ws["A2:V"+str(len_APAR_df)]
+                        for cell in Range_ARAP:
+                            for x in cell:
+                                x.border=border
+    
+                        AMount_Range=ws["I2:J"+str(len_APAR_df)]
+                        for cell in AMount_Range:
+                            for x in cell:
+                                x.number_format = '#,##0.00;(#,##0.00)'
+    
+    
+                        wb.save(filename_2)
+                        wb.close()
+                        ############### summary_general_category #####################
+                        accouted_amount_total=calculate_sum_of_df(ARAP_df,'Accounted_Amount')
+                        summary_general_category = compare_two_values(Grand_total_value,accouted_amount_total)
+        #                 print("accouted_amount_total "+str(accouted_amount_total))
+        #                 print("Grand_Total_value "+str(Grand_total_value))
+                        ##############################################################
+    
+                        #################### summary_variance ########################
+                        summary_variance = compare_two_values(checking_value,0.00)       ###why compare with 0 ????         
+                        ##############################################################
+    
+                        ############### net_balance_per_currency #####################
+                        new_dict = get_comparison_data() 
+                        data_AP_AR = ARAP_df.groupby('Document_Currency').sum()["Entered_Amount"]
+                        for curr in currency_list:
+                            if curr in data_AP_AR:
+                                pass
+                            else:
+                                data_AP_AR[curr]=0
+                            print(curr)
+                            print(new_dict[curr])
+                            print(data_AP_AR[curr])
+    
+                            result = compare_two_values(new_dict[curr],data_AP_AR[curr])
+                            if result == "OK":
+                                test_result = "OK" 
+                            else: 
+                                test_result = "Not OK"
+                                break
+                        ##############################################################
+    
+    
+    
+    
+                        ##### create dict for self check and append to list #######
+                        compare = {'BU': business_unit ,
+                                   'Interco BU': interco_business_unit ,
+                                   'summary_general_category': summary_general_category,
+                                   'summary_variance':summary_variance , 
+                                   'net_balance_per_currency':test_result
+                                  }   
+                        compare_data = compare_data.append(compare, ignore_index = True)
+    
+        
+        report5_selfcheck_folder= Report_Folder
+        self_check_file=report5_selfcheck_folder+"\Report 5 - Validation File - Interco Summary Balances Report.csv"
+        self_check_report_df = pd.DataFrame(compare_data)
+        if os.path.exists(self_check_file):
+            print('The file exist.')
+            present_df = pd.read_csv(self_check_file)
+            print(present_df)
+            new_data = compare_data  
+            new_data=pd.DataFrame(new_data)
+            newdf = pd.concat([present_df, new_data], ignore_index=True)
+            print ("Test New Data")
+            print (newdf)
+            newdf.to_csv(self_check_file,index=False)
+            
+        else:
+            print('The file does not exist.')
+            self_check_report_df.to_csv(self_check_file,index=False)
+        
+        return ("Success")
+    except Exception as e:
+        print(e)
+        return str(e)
+
+##import os
+#BU_name = "AAB"
+##Report_Folder = os.getcwd()
+##print(os.getcwd)
+##Template_Path5 = r"C:\RPA\Recobot\Templates\Report 5 Template.xlsx"
+##Dashboard_Path = os.getcwd()
+##file_path = "Batch1_20230413_AP_AR_180_Merged.csv"
+##file_path2 = "Batch1_20230413_20230406_RPA Interco Movement - Interco Balances (TB) Report_Formatted.csv"
+##file_path3 = "Batch1_20230413_20230406_RPA Interco Movement - Interco Revaluation Report_Formatted.csv"
+##file_path4 = "Batch1_20230413_20230406_RPA Interco Movement - Netting Settlement Report_Formatted.csv"
+##Mapping_Sheet = "MappingFile.xlsx"
+##report5(BU_name,Report_Folder,Template_Path5,Dashboard_Path,file_path,file_path2,file_path3,file_path4,Mapping_Sheet)
+#report5("STR","C:\\RPA\\RecoBot\\OutputFiles\\Report5","D:\\UiPath Projects\\Project\\Project\\ReportGeneration\\ReportGeneration\\Templates\\Report 5 Template.xlsx","C:\\RPA\\RecoBot\\OutputFiles\\Report5","C:\\RPA\\RecoBot\\InputFiles\\Test\\180_AP_AR_Merged.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch5_20230628_20230628_RPA Interco Movement - Interco Balances (TB) Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch5_20230628_20230628_RPA Interco Movement - Interco Revaluation Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch5_20230628_20230628_RPA Interco Movement - Netting Settlement Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\MappingFile.xlsx")
+#report5("TAX","C:\\RPA\\RecoBot\\OutputFiles\\Report5","D:\\UiPath Projects\\Project\\Project\\ReportGeneration\\ReportGeneration\\Templates\\Report 5 Template.xlsx","C:\\RPA\\RecoBot\\OutputFiles\\Report5","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_AP_AR_180_Merged.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_20230720_RPA Interco Movement - Interco Balances (TB) Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_20230720_RPA Interco Movement - Interco Revaluation Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_20230720_RPA Interco Movement - Netting Settlement Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\MappingFileNew.xlsx")
+# import csv
+# ages = []
+# with open('C:\RPA\distinct_values.csv', 'r') as csv_file:
+#     csv_reader = csv.DictReader(csv_file)
+#     for row in csv_reader:
+#         age = str(row['BU'])  # Convert age to integer
+#         ages.append(age)       # Add age to the list
+
+# # Perform a for loop on the list of ages
+# for age in ages:
+#     report5(age,"C:\\RPA\\RecoBot\\OutputFiles\\Report5","D:\\UiPath Projects\\Project\\Project\\ReportGeneration\\ReportGeneration\\Templates\\Report 5 Template.xlsx","C:\\RPA\\RecoBot\\OutputFiles\\Report5","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_AP_AR_180_Merged.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_20230720_RPA Interco Movement - Interco Balances (TB) Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_20230720_RPA Interco Movement - Interco Revaluation Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\Batch3_20230720_20230720_RPA Interco Movement - Netting Settlement Report_Formatted.csv","C:\\RPA\\RecoBot\\InputFiles\\Formatted\\MappingFile.xlsx")
